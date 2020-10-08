@@ -12,4 +12,10 @@ class HttpClientTest {
         assertEquals(200, httpClient.getResponseCode());
     }
 
+    @Test
+    void shouldReadFailureStatusCode(){
+        HttpClient httpClient = new HttpClient("urlecho.appspot.com", 80, "/echo?ststus=401");
+        assertEquals(401, httpClient.getResponseCode());
+    }
+
 }
