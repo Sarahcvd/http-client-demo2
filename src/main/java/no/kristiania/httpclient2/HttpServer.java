@@ -18,37 +18,42 @@ public class HttpServer {
         }).start();
     }
 
-    public static void main(String[] args) throws IOException {
-        new HttpServer(8080);
-    }
+    private static void handleRequest(Socket clientSocket) throws IOException {
 
-    private static void handleRequest(Socket socket) throws IOException {
-        String responseCode = "200";
 
         // The first line of the incoming request is called the request line
-        String requestLine = HttpClient.readLine(socket);
+        String requestLine = HttpClient.readLine(clientSocket);
         System.out.println(requestLine);
 
         // The requestLine consists of a verb (GET, POST), a request target and HTTP version
         String requestTarget = requestLine.split(" ")[1];
+        String statusCode = "200";
+        String body = null;
         // The request target can have a query string separated by ?
         // For example /echo?status=404
         int questionPos = requestTarget.indexOf("?");
         if(questionPos != -1){
-            String queryString = requestTarget.substring(questionPos+1);
-            // Here, more code is needed to handle other parameters than status
-            int equalPos = queryString.indexOf("=");
-            // Each query parameter contains key=value
-            String parameterValue = queryString.substring(equalPos+1);
-            responseCode = parameterValue;
+            QueryString queryString = new QueryString(requestTarget.substring(questionPos+1));
+            statusCode = queryString.getParameter("status");
+            if(statusCode == null) {
+                statusCode = "200";
+            }
+            body = queryString.getParameter("body");
+        }
+        if (body == null) {
+            body = "Hello <strong>World</strong>!";
         }
 
-        String response = "HTTP/1.1 " + responseCode + " OK\n" +
+        String response = "HTTP/1.1 " + statusCode + " OK\n" +
+                "Content-Length: " + body.length() + "\r\n" +
                 "Content-Type: text/html; charset=utf-8\r\n" +
-                "Content-Length: 11\r\n" +
                 "\r\n" +
-                "Hello World";
+                body;
 
-        socket.getOutputStream().write(response.getBytes());
+        clientSocket.getOutputStream().write(response.getBytes());
+    }
+
+    public static void main(String[] args) throws IOException {
+        new HttpServer(8080);
     }
 }
