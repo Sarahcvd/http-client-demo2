@@ -8,26 +8,33 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class HttpClientTest {
 
-    @Test
-    void shouldReadSuccessStatusCode() throws IOException {
-        HttpClient httpClient = makeEchoRequest("/echo?status=200");
-        assertEquals(200, httpClient.getResponseCode());
-    }
-
-    private HttpClient makeEchoRequest(String requestTarget) throws IOException {
+    /* FÅ VEKK DENNE TESTEN */
+    private HttpClient HttpClient(String requestTarget) throws IOException {
         return new HttpClient("urlecho.appspot.com", 80, requestTarget);
     }
 
     @Test
+    void shouldReadSuccessStatusCode() throws IOException {
+        HttpClient client = new HttpClient ("urlecho.appspot.com", 80, "/echo");
+        assertEquals(200, client.getStatusCode());
+    }
+
+    @Test
     void shouldReadFailureStatusCode() throws IOException {
-        HttpClient httpClient = makeEchoRequest("/echo?status=401");
-        assertEquals(401, httpClient.getResponseCode());
+        HttpClient client = new HttpClient("urlecho.appspot.com", 80, "/echo?status=404");
+        assertEquals(404, client.getStatusCode());
     }
 
     @Test
     void shouldReadHeaders() throws IOException {
-        HttpClient httpClient = makeEchoRequest("/echo?body=Kristiania");
-        assertEquals("10", httpClient.getResponseHeader("Content-Length"));
+        HttpClient client = new HttpClient("urlecho.appspot.com", 80, "/echo?body=Kristiania");
+        assertEquals("10", client.getResponseHeader("Content-Length"));
+    }
+
+    @Test
+    void shouldReadResponseBody() throws IOException {
+        HttpClient client = new HttpClient("urlecho.appspot.com", 80, "/echo?body=Kristiania");
+        assertEquals("Kristiania", client.getReponseBody());
     }
 
 }
